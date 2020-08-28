@@ -288,6 +288,32 @@ describe('I18456 Built-in slash commands: common', () => {
         cy.uiWaitUntilMessagePostedIncludes(`You were added to the channel by @${user1.username}`);
     });
 
+    it('MM-T660_1 /invite tests when used in DMs and GMs', () => {
+        const userToInviteDM = userGroup[4];
+
+        loginAndVisitDefaultChannel(user1, testChannelUrl);
+        cy.get('#postListContent', {timeout: TIMEOUTS.HALF_MIN}).should('be.visible');
+
+        // # In a GM Use the /invite command to invite a channel to another channel (e.g., /invite @[channel name])
+        cy.postMessage(`/invite @${testChannel.name}`);
+
+        // * Error appears: "We couldn't find the user. They may have been deactivated by the System Administrator."
+        cy.uiWaitUntilMessagePostedIncludes('We couldn\'t find the user. They may have been deactivated by the System Administrator.');
+
+        cy.get('#addDirectChannel').click();
+        cy.get('#selectItems').type(`${userToInviteDM.username}`);
+        cy.wait(TIMEOUTS.TWO_SEC);
+        cy.get('#multiSelectList').findByText(`@${userToInviteDM.username}`).click();
+        cy.findByText('Go').click();
+        cy.get('#channelHeaderDropdownButton').contains(`${userToInviteDM.username}`).should('be.visible');
+
+        // # In a GM Use the /invite command to invite a channel to another channel (e.g., /invite @[channel name])
+        cy.postMessage(`/invite @${testChannel.name}`);
+
+        // * Error appears: "We couldn't find the user. They may have been deactivated by the System Administrator."
+        cy.uiWaitUntilMessagePostedIncludes('We couldn\'t find the user. They may have been deactivated by the System Administrator.');
+    });
+
     it('MM-T2834 Slash command help stays visible for system slash command', () => {
         // # Login as user 1 and visit default channel
         loginAndVisitDefaultChannel(user1, testChannelUrl);
